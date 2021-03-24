@@ -1,0 +1,1 @@
+This project is weather app build with django!
