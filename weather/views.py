@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import requests
 from .forms import CityForm
 from .models import City
@@ -32,8 +32,16 @@ def home_view(request):
 def add_city(request, form, url):
     city = form.cleaned_data.get('name')
     r = requests.get(url.format(city)).json()
+    #check city is exist
     if r['cod']=='404':
         messages.warning(request, 'City does not exist')
     else:
         form.save()
         messages.success(request, 'That city was added successfully')
+
+
+def city_remove(request, pk):
+    city = City.objects.get(pk=pk)
+    city.delete()
+    messages.success(request, 'remove success')
+    return redirect('weather:home')

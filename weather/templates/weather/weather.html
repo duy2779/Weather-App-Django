@@ -73,6 +73,9 @@
                       <p class="card-text"><small class="text-muted">{{ city_weather.description }}</small></p>
                     </div>
                   </div>
+                  <div class="col-1 mt-2 mx-2">
+                    <a href="{% url 'weather:city-remove' city_weather.city.id %}" style="color: black;" class="text-decoration-none text-black">X</a>
+                  </div>
                 </div>
               </div>
               {% endfor %}
