@@ -1,28 +1,39 @@
 from django.shortcuts import render
 import requests
+from .forms import CityForm
+from .models import City
+from django.contrib import messages
 
 # Create your views here.
 def home_view(request):
     url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid=169416a960ee036d3824e808b93cd7d9'
 
-    city = 'Las Vegas'
+    form = CityForm(request.POST or None)
+    if form.is_valid():
+        add_city(request, form, url)
 
-    if request.method == 'POST':
-        form = request.POST
-        city=form['city']
+    cities = City.objects.all()
+    cities_weather = []
 
-    r = requests.get(url.format(city)).json()
-    city_weather = {}
-
-    if r['cod']=='404':
-        print('city not exist')
-    else:
+    for city in cities:
+        r = requests.get(url.format(city)).json()
         city_weather = {
                 'city': city,
                 'temperature': r['main']['temp'],
                 'description': r['weather'][0]['description'].capitalize(),
                 'icon': r['weather'][0]['icon']
             }
-    context = {'city_weather':city_weather}
+        cities_weather.append(city_weather)
+    context = {'form':form, 'cities_weather':cities_weather}
 
     return render(request, 'weather/weather.html', context)
+
+
+def add_city(request, form, url):
+    city = form.cleaned_data.get('name')
+    r = requests.get(url.format(city)).json()
+    if r['cod']=='404':
+        messages.warning(request, 'City does not exist')
+    else:
+        form.save()
+        messages.success(request, 'That city was added successfully')
